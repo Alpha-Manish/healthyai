@@ -56,6 +56,7 @@ export function CheckInDialog({
   const [otherSymptoms, setOtherSymptoms] = useState("");
   const [notes, setNotes] = useState("");
   const [result, setResult] = useState<CheckIn | null>(null);
+  const [analysing, setAnalysing] = useState(false);
 
   function reset() {
     setPain(3);
