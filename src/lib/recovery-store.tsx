@@ -71,7 +71,7 @@ type Store = {
   completeOnboarding: (patient: Patient, report: ExtractedReport) => void;
   setTaskStatus: (id: string, status: Task["status"]) => void;
   snoozeTask: (id: string) => void;
-  submitCheckIn: (input: CheckInInput) => CheckIn;
+  submitCheckIn: (input: CheckInInput) => Promise<CheckIn>;
   markAllRead: () => void;
   resetDemo: () => void;
 };
