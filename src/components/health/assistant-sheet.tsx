@@ -56,19 +56,64 @@ export function AssistantSheet({
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, thinking]);
 
-  function ask(question: string) {
+  async function ask(question: string) {
     const q = question.trim();
     if (!q || thinking) return;
-    setMessages((prev) => [...prev, { id: Date.now(), role: "user", text: q }]);
+
+    const history = [...messages, { id: Date.now(), role: "user" as const, text: q }];
+    setMessages(history);
     setInput("");
     setThinking(true);
-    setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        { id: Date.now() + 1, role: "assistant", text: answerQuestion(q, store) },
-      ]);
+
+    const replyId = Date.now() + 1;
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          messages: history.map((m) => ({ role: m.role, content: m.text })),
+          context: buildRecoveryContext(store),
+        }),
+      });
+
+      if (!res.ok || !res.body) {
+        const detail = (await res.text().catch(() => "")).trim();
+        throw new Error(detail || "The assistant couldn't answer just now.");
+      }
+
+      setMessages((prev) => [...prev, { id: replyId, role: "assistant", text: "" }]);
       setThinking(false);
-    }, 600);
+
+      const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
+      let text = "";
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        text += value;
+        setMessages((prev) => prev.map((m) => (m.id === replyId ? { ...m, text } : m)));
+      }
+      if (!text.trim()) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === replyId
+              ? { ...m, text: "I couldn't put together an answer just now. Please try again." }
+              : m,
+          ),
+        );
+      }
+    } catch (error) {
+      const text =
+        error instanceof Error && error.message
+          ? error.message
+          : "The assistant couldn't answer just now. Please try again.";
+      setMessages((prev) =>
+        prev.some((m) => m.id === replyId)
+          ? prev.map((m) => (m.id === replyId ? { ...m, text } : m))
+          : [...prev, { id: replyId, role: "assistant", text }],
+      );
+    } finally {
+      setThinking(false);
+    }
   }
 
   return (
