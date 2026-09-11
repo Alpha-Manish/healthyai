@@ -8,6 +8,7 @@ import {
 } from "react";
 import { demoPatient, demoReport, generateSchedule, RECOVERY_DAYS } from "./demo-data";
 import { analyzeCheckIn, type CheckInInput } from "./symptom-analysis";
+import { analyzeCheckInWithAi } from "./symptom-analysis.functions";
 import type {
   AlertItem,
   CheckIn,
