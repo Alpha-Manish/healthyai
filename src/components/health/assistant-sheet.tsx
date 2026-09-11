@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { answerQuestion, SUGGESTED_QUESTIONS } from "@/lib/assistant";
+import { buildRecoveryContext, SUGGESTED_QUESTIONS } from "@/lib/assistant";
 import { useRecovery } from "@/lib/recovery-store";
 
 type Msg = { id: number; role: "user" | "assistant"; text: string };
