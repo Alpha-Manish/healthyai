@@ -48,14 +48,13 @@ export const Route = createFileRoute("/api/chat")({
           return new Response("No question was sent.", { status: 400 });
         }
 
-        const messages: ModelMessage[] = [
-          { role: "system", content: SYSTEM },
-          {
-            role: "system",
-            content: `RECOVERY CONTEXT (the patient's own data):\n${body.context ?? "No recovery data available."}`,
-          },
-          ...history.map((m) => ({ role: m.role, content: m.content }) as ModelMessage),
-        ];
+        const messages: ModelMessage[] = history.map(
+          (m) => ({ role: m.role, content: m.content }) as ModelMessage,
+        );
+
+        const system = `${SYSTEM}\n\nRECOVERY CONTEXT (the patient's own data):\n${
+          body.context ?? "No recovery data available."
+        }`;
 
         const initialRunId = getLovableAiGatewayRunId(request);
         const gateway = createLovableAiGatewayProvider(apiKey, initialRunId);
@@ -63,6 +62,7 @@ export const Route = createFileRoute("/api/chat")({
         try {
           const result = streamText({
             model: gateway(RECOVERY_MODEL),
+            system,
             messages,
             abortSignal: request.signal,
             onError: ({ error }) => console.error("chat stream error", error),
