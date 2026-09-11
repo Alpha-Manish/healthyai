@@ -168,8 +168,16 @@ export function RecoveryProvider({ children }: { children: ReactNode }) {
   );
 
   const submitCheckIn = useCallback(
-    (input: CheckInInput) => {
-      const analysis = analyzeCheckIn(input);
+    async (input: CheckInInput) => {
+      let analysis: { risk: RiskLevel; reasons: string[]; recommendation: string };
+      try {
+        analysis = await analyzeCheckInWithAi({
+          data: { ...input, day: currentDay, surgeryType: patient.surgeryType },
+        });
+      } catch (error) {
+        console.error("AI symptom analysis unavailable", error);
+        analysis = analyzeCheckIn(input);
+      }
       const entry: CheckIn = {
         ...input,
         ...analysis,
