@@ -217,7 +217,7 @@ export function RecoveryProvider({ children }: { children: ReactNode }) {
       }
       return entry;
     },
-    [currentDay, pushNotification],
+    [currentDay, patient.surgeryType, pushNotification],
   );
 
   const todayTasks = useMemo(
