@@ -161,19 +161,24 @@ export function CheckInDialog({
 
             <Button
               className="w-full"
-              onClick={() =>
-                setResult(
-                  submitCheckIn({
+              disabled={analysing}
+              onClick={async () => {
+                setAnalysing(true);
+                try {
+                  const entry = await submitCheckIn({
                     pain,
                     temperature,
                     otherSymptoms,
                     notes,
                     ...flags,
-                  }),
-                )
-              }
+                  });
+                  setResult(entry);
+                } finally {
+                  setAnalysing(false);
+                }
+              }}
             >
-              Submit check-in
+              {analysing ? "Analysing your symptoms…" : "Submit check-in"}
             </Button>
           </div>
         ) : (
